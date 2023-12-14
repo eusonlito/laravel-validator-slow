@@ -15,15 +15,14 @@ class Slow extends Command
 
         $this->validatorAsterisk($data);
         $this->validatorFixed($data);
-        $this->validatorChunks1000($data);
-        $this->validatorChunks5000($data);
-        $this->validatorChunks10000($data);
+        $this->validatorChunks($data, 100);
+        $this->validatorChunks($data, 1000);
+        $this->validatorChunks($data, 5000);
+        $this->validatorChunks($data, 10000);
     }
 
     protected function data(): array
     {
-        memory_reset_peak_usage();
-
         $start = $this->start();
 
         $data = ['items' => json_decode(file_get_contents(base_path('large-file.json')), true)];
@@ -55,37 +54,15 @@ class Slow extends Command
         $this->finish('validatorFixed', $start);
     }
 
-    protected function validatorChunks1000(array $data): void
+    protected function validatorChunks(array $data, int $size): void
     {
         $start = $this->start();
 
-        foreach (array_chunk($data['items'], 1000) as $chunk) {
+        foreach (array_chunk($data['items'], $size) as $chunk) {
             Validator::make(['items' => $chunk], $this->rulesAsterisk());
         }
 
-        $this->finish('validatorChunks1000', $start);
-    }
-
-    protected function validatorChunks5000(array $data): void
-    {
-        $start = $this->start();
-
-        foreach (array_chunk($data['items'], 5000) as $chunk) {
-            Validator::make(['items' => $chunk], $this->rulesAsterisk());
-        }
-
-        $this->finish('validatorChunks5000', $start);
-    }
-
-    protected function validatorChunks10000(array $data): void
-    {
-        $start = $this->start();
-
-        foreach (array_chunk($data['items'], 10000) as $chunk) {
-            Validator::make(['items' => $chunk], $this->rulesAsterisk());
-        }
-
-        $this->finish('validatorChunks10000', $start);
+        $this->finish('validatorChunks'.$size, $start);
     }
 
     protected function rulesAsterisk(): array
