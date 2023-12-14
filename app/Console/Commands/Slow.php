@@ -9,7 +9,7 @@ class Slow extends Command
 {
     protected $signature = 'app:slow';
 
-    public function handle()
+    public function handle(): void
     {
         $data = $this->data();
 
@@ -22,34 +22,86 @@ class Slow extends Command
 
     protected function data(): array
     {
-        $start = microtime(true);
+        memory_reset_peak_usage();
+
+        $start = $this->start();
 
         $data = ['items' => json_decode(file_get_contents(base_path('large-file.json')), true)];
 
-        dump('Read Data Time: '.sprintf('%.4f', microtime(true) - $start));
+        $this->finish('Read Data', $start);
+
         dump('Items: '.count($data['items']));
 
         return $data;
     }
 
-    protected function validatorAsterisk(array $data)
+    protected function validatorAsterisk(array $data): void
     {
-        $start = microtime(true);
+        $start = $this->start();
 
-        Validator::make($data, [
+        Validator::make($data, $this->rulesAsterisk());
+
+        $this->finish('validatorAsterisk', $start);
+    }
+
+    protected function validatorFixed(array $data): void
+    {
+        $rules = $this->rulesFixed($data);
+
+        $start = $this->start();
+
+        Validator::make($data, $rules);
+
+        $this->finish('validatorFixed', $start);
+    }
+
+    protected function validatorChunks1000(array $data): void
+    {
+        $start = $this->start();
+
+        foreach (array_chunk($data['items'], 1000) as $chunk) {
+            Validator::make(['items' => $chunk], $this->rulesAsterisk());
+        }
+
+        $this->finish('validatorChunks1000', $start);
+    }
+
+    protected function validatorChunks5000(array $data): void
+    {
+        $start = $this->start();
+
+        foreach (array_chunk($data['items'], 5000) as $chunk) {
+            Validator::make(['items' => $chunk], $this->rulesAsterisk());
+        }
+
+        $this->finish('validatorChunks5000', $start);
+    }
+
+    protected function validatorChunks10000(array $data): void
+    {
+        $start = $this->start();
+
+        foreach (array_chunk($data['items'], 10000) as $chunk) {
+            Validator::make(['items' => $chunk], $this->rulesAsterisk());
+        }
+
+        $this->finish('validatorChunks10000', $start);
+    }
+
+    protected function rulesAsterisk(): array
+    {
+        return [
             'items' => ['array'],
             'items.*.id' => ['required', 'numeric'],
             'items.*.type' => ['required', 'string'],
             'items.*.public' => ['required', 'boolean'],
             'items.*.created_at' => ['required'],
-        ]);
-
-        dump('validatorAsterisk Time: '.sprintf('%.4f', microtime(true) - $start));
+        ];
     }
 
-    protected function validatorFixed(array $data)
+    protected function rulesFixed(array $data): array
     {
-        $start = microtime(true);
+        $start = $this->start();
 
         $count = count($data['items']);
         $rules = ['items' => ['array']];
@@ -61,63 +113,20 @@ class Slow extends Command
             $rules['items.'.$i.'.created_at'] = ['required'];
         }
 
-        dump('validatorFixed Prepare: '.sprintf('%.4f', microtime(true) - $start));
+        $this->finish('rulesFixed', $start);
 
-        $start = microtime(true);
-
-        Validator::make($data, $rules);
-
-        dump('validatorFixed Time: '.sprintf('%.4f', microtime(true) - $start));
+        return $rules;
     }
 
-    protected function validatorChunks1000(array $data)
+    protected function start(): float
     {
-        $start = microtime(true);
+        memory_reset_peak_usage();
 
-        foreach (array_chunk($data['items'], 1000) as $chunk) {
-            Validator::make(['items' => $chunk], [
-                'items' => ['array'],
-                'items.*.id' => ['required', 'numeric'],
-                'items.*.type' => ['required', 'string'],
-                'items.*.public' => ['required', 'boolean'],
-                'items.*.created_at' => ['required'],
-            ]);
-        }
-
-        dump('validatorChunks1000 Time: '.sprintf('%.4f', microtime(true) - $start));
+        return microtime(true);
     }
 
-    protected function validatorChunks5000(array $data)
+    protected function finish(string $title, float $start): void
     {
-        $start = microtime(true);
-
-        foreach (array_chunk($data['items'], 5000) as $chunk) {
-            Validator::make(['items' => $chunk], [
-                'items' => ['array'],
-                'items.*.id' => ['required', 'numeric'],
-                'items.*.type' => ['required', 'string'],
-                'items.*.public' => ['required', 'boolean'],
-                'items.*.created_at' => ['required'],
-            ]);
-        }
-
-        dump('validatorChunks5000 Time: '.sprintf('%.4f', microtime(true) - $start));
-    }
-
-    protected function validatorChunks10000(array $data)
-    {
-        $start = microtime(true);
-
-        foreach (array_chunk($data['items'], 10000) as $chunk) {
-            Validator::make(['items' => $chunk], [
-                'items' => ['array'],
-                'items.*.id' => ['required', 'numeric'],
-                'items.*.type' => ['required', 'string'],
-                'items.*.public' => ['required', 'boolean'],
-                'items.*.created_at' => ['required'],
-            ]);
-        }
-
-        dump('validatorChunks10000 Time: '.sprintf('%.4f', microtime(true) - $start));
+        dump(sprintf($title.': %.4f seconds / %.2f memory', microtime(true) - $start, memory_get_peak_usage(true) / 1024 / 1024));
     }
 }
