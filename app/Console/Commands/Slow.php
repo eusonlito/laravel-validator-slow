@@ -11,9 +11,13 @@ class Slow extends Command
 
     public function handle()
     {
+        $start = microtime(true);
+
         $data = $this->data();
 
-        dump(count($data['items']));
+        dump('Read Data: '.sprintf('%.4f', microtime(true) - $start));
+
+        dump('Items: '.count($data['items']));
 
         $start = microtime(true);
 
@@ -25,7 +29,7 @@ class Slow extends Command
             'items.*.created_at' => ['required'],
         ]);
 
-        dump(microtime(true) - $start);
+        dump('Validator Time: '.sprintf('%.4f', microtime(true) - $start));
     }
 
     protected function data(): array
