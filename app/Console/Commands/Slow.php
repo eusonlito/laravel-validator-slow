@@ -18,9 +18,9 @@ class Slow extends Command
 
         $this->validatorAsterisk($data);
         $this->validatorFixed($data);
+        $this->validatorChunks($data, 10);
         $this->validatorChunks($data, 100);
         $this->validatorChunks($data, 1000);
-        $this->validatorChunks($data, 1000, self::FIXED_FORMAT);
         $this->validatorChunks($data, 5000);
         $this->validatorChunks($data, 10000);
     }
