@@ -36,7 +36,7 @@ class Slow extends Command
     {
         $start = microtime(true);
 
-        $validator = Validator::make($data, [
+        Validator::make($data, [
             'items' => ['array'],
             'items.*.id' => ['required', 'numeric'],
             'items.*.type' => ['required', 'string'],
@@ -44,7 +44,6 @@ class Slow extends Command
             'items.*.created_at' => ['required'],
         ]);
 
-        dump('validatorAsterisk Success: '.($validator->passes() ? 'TRUE' : 'FALSE'));
         dump('validatorAsterisk Time: '.sprintf('%.4f', microtime(true) - $start));
     }
 
@@ -66,9 +65,6 @@ class Slow extends Command
 
         $start = microtime(true);
 
-        $validator = Validator::make($data, $rules);
-
-        dump('validatorFixed Success: '.($validator->passes() ? 'TRUE' : 'FALSE'));
         dump('validatorFixed Time: '.sprintf('%.4f', microtime(true) - $start));
     }
 
@@ -77,7 +73,7 @@ class Slow extends Command
         $start = microtime(true);
 
         foreach (array_chunk($data['items'], 1000) as $chunk) {
-            $validator = Validator::make(['items' => $chunk], [
+            Validator::make(['items' => $chunk], [
                 'items' => ['array'],
                 'items.*.id' => ['required', 'numeric'],
                 'items.*.type' => ['required', 'string'],
@@ -94,7 +90,7 @@ class Slow extends Command
         $start = microtime(true);
 
         foreach (array_chunk($data['items'], 5000) as $chunk) {
-            $validator = Validator::make(['items' => $chunk], [
+            Validator::make(['items' => $chunk], [
                 'items' => ['array'],
                 'items.*.id' => ['required', 'numeric'],
                 'items.*.type' => ['required', 'string'],
@@ -111,7 +107,7 @@ class Slow extends Command
         $start = microtime(true);
 
         foreach (array_chunk($data['items'], 10000) as $chunk) {
-            $validator = Validator::make(['items' => $chunk], [
+            Validator::make(['items' => $chunk], [
                 'items' => ['array'],
                 'items.*.id' => ['required', 'numeric'],
                 'items.*.type' => ['required', 'string'],
