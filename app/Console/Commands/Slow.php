@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Validator;
 
 class Slow extends Command
 {
+    const ASTERISK_FORMAT = 'rulesAsterisk';
+    const FIXED_FORMAT = 'validatorFixed';
+    
     protected $signature = 'app:slow';
 
     public function handle(): void
@@ -17,6 +20,7 @@ class Slow extends Command
         $this->validatorFixed($data);
         $this->validatorChunks($data, 100);
         $this->validatorChunks($data, 1000);
+        $this->validatorChunks($data, 1000, self::FIXED_FORMAT);
         $this->validatorChunks($data, 5000);
         $this->validatorChunks($data, 10000);
     }
@@ -54,12 +58,17 @@ class Slow extends Command
         $this->finish('validatorFixed', $start);
     }
 
-    protected function validatorChunks(array $data, int $size): void
+    protected function validatorChunks(array $data, int $size, $mode = self::ASTERISK_FORMAT): void
     {
         $start = $this->start();
 
         foreach (array_chunk($data['items'], $size) as $chunk) {
-            Validator::make(['items' => $chunk], $this->rulesAsterisk());
+            Validator::make(
+                ['items' => $chunk],
+                $mode == self::ASTERISK_FORMAT
+                    ? $this->rulesAsterisk()
+                    : $this->rulesFixed($chunk)
+            );
         }
 
         $this->finish('validatorChunks'.$size, $start);
@@ -80,7 +89,7 @@ class Slow extends Command
     {
         $start = $this->start();
 
-        $count = count($data['items']);
+        $count = count($data['items'] ?? $data);
         $rules = ['items' => ['array']];
 
         for ($i = 0; $i < $count; $i++) {
