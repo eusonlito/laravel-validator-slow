@@ -65,6 +65,8 @@ class Slow extends Command
 
         $start = microtime(true);
 
+        Validator::make($data, $rules);
+
         dump('validatorFixed Time: '.sprintf('%.4f', microtime(true) - $start));
     }
 
