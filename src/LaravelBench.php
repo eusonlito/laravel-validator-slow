@@ -89,11 +89,11 @@ final class LaravelBench
         $this->validateLaravel($data['data'], $rules);
     }
 
-    #[Groups(['laravel'])]
+    #[Groups(['laravel', 'fixed'])]
     #[ParamProviders(['provideData'])]
     public function benchFixed(array $data): void
     {
-        $rulesFixed = $this->getFixedRules($data['data']);
+        $rulesFixed = $this->getFixedRules($data['data']['items']);
 
         $this->validateLaravel($data['data'], $rulesFixed);
     }

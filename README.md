@@ -15,7 +15,7 @@ The current values (`laravel/framework:10.37.3`):
 | Yii3Bench    | benchYiiChunked      | 11351 items,5000  | 10   | 16.341MB | 359.142ms     | +0.00σ       | +0.00%         |
 | Yii3Bench    | benchYiiChunked      | 11351 items,10000 | 10   | 16.468MB | 410.632ms     | +0.00σ       | +0.00%         |
 | LaravelBench | benchAsterisk        | 11351 items       | 10   | 60.726MB | _**62.143s**_ | +0.00σ       | +0.00%         |
-| LaravelBench | benchFixed           | 11351 items       | 10   | 32.492MB | 12.223ms      | +0.00σ       | +0.00%         |
+| LaravelBench | benchFixed           | 11351 items       | 10   | 32.492MB | 162.757ms     | +0.00σ       | +0.00%         |
 | LaravelBench | benchChunkedAsterisk | 11351 items,100   | 10   | 27.305MB | 442.052ms     | +0.00σ       | +0.00%         |
 | LaravelBench | benchChunkedAsterisk | 11351 items,1000  | 10   | 29.794MB | 2.652s        | +0.00σ       | +0.00%         |
 | LaravelBench | benchChunkedAsterisk | 11351 items,5000  | 10   | 41.014MB | 11.641s       | +0.00σ       | +0.00%         |
@@ -35,7 +35,7 @@ Initial `phpbench` data:
 | 0    | Yii3Bench    | benchYiiChunked      | 11351 items,5000  | 10   | 16,340,656b | 359,141.800μs    | +0.00σ       | +0.00%         |
 | 0    | Yii3Bench    | benchYiiChunked      | 11351 items,10000 | 10   | 16,467,584b | 410,632.100μs    | +0.00σ       | +0.00%         |
 | 0    | LaravelBench | benchAsterisk        | 11351 items       | 10   | 60,725,576b | 62,142,847.400μs | +0.00σ       | +0.00%         |
-| 0    | LaravelBench | benchFixed           | 11351 items       | 10   | 32,491,728b | 12,222.900μs     | +0.00σ       | +0.00%         |
+| 0    | LaravelBench | benchFixed           | 11351 items       | 10   | 32,491,728b | 162,757.940μs    | +0.00σ       | +0.00%         |
 | 0    | LaravelBench | benchChunkedAsterisk | 11351 items,100   | 10   | 27,305,264b | 442,051.700μs    | +0.00σ       | +0.00%         |
 | 0    | LaravelBench | benchChunkedAsterisk | 11351 items,1000  | 10   | 29,794,376b | 2,652,065.300μs  | +0.00σ       | +0.00%         |
 | 0    | LaravelBench | benchChunkedAsterisk | 11351 items,5000  | 10   | 41,013,648b | 11,640,652.800μs | +0.00σ       | +0.00%         |
