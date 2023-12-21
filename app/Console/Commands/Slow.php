@@ -2,14 +2,14 @@
 
 namespace App\Console\Commands;
 
+use Closure;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\RequiredIf;
 
 class Slow extends Command
 {
-    const ASTERISK_FORMAT = 'rulesAsterisk';
-    const FIXED_FORMAT = 'validatorFixed';
-    
     protected $signature = 'app:slow';
 
     public function handle(): void
@@ -18,20 +18,18 @@ class Slow extends Command
 
         $this->validatorAsterisk($data);
         $this->validatorFixed($data);
-        $this->validatorChunks($data, 10);
-        $this->validatorChunks($data, 100);
-        $this->validatorChunks($data, 1000);
-        $this->validatorChunks($data, 5000);
-        $this->validatorChunks($data, 10000);
+        //$this->validatorChunks($data, 10);
+        //$this->validatorChunks($data, 100);
+        //$this->validatorChunks($data, 1000);
+        //$this->validatorChunks($data, 5000);
+        //$this->validatorChunks($data, 10000);
     }
 
     protected function data(): array
     {
-        $start = $this->start();
 
         $data = ['items' => json_decode(file_get_contents(base_path('large-file.json')), true)];
 
-        $this->finish('Read Data', $start);
 
         dump('Items: '.count($data['items']));
 
@@ -42,7 +40,7 @@ class Slow extends Command
     {
         $start = $this->start();
 
-        Validator::make($data, $this->rulesAsterisk());
+        Validator::make($data, $this->rulesAsterisk())->stopOnFirstFailure()->fails() ? die(__LINE__.':FAIL') : '';
 
         $this->finish('validatorAsterisk', $start);
     }
@@ -53,22 +51,17 @@ class Slow extends Command
 
         $start = $this->start();
 
-        Validator::make($data, $rules);
+        Validator::make($data, $rules)->stopOnFirstFailure()->fails() ? die(__LINE__.':FAIL') : '';
 
         $this->finish('validatorFixed', $start);
     }
 
-    protected function validatorChunks(array $data, int $size, $mode = self::ASTERISK_FORMAT): void
+    protected function validatorChunks(array $data, int $size): void
     {
         $start = $this->start();
 
         foreach (array_chunk($data['items'], $size) as $chunk) {
-            Validator::make(
-                ['items' => $chunk],
-                $mode == self::ASTERISK_FORMAT
-                    ? $this->rulesAsterisk()
-                    : $this->rulesFixed($chunk)
-            );
+            Validator::make(['items' => $chunk], $this->rulesAsterisk())->stopOnFirstFailure()->fails() ? die(__LINE__.':FAIL') : '';
         }
 
         $this->finish('validatorChunks'.$size, $start);
@@ -79,9 +72,9 @@ class Slow extends Command
         return [
             'items' => ['array'],
             'items.*.id' => ['required', 'numeric'],
-            'items.*.type' => ['required', 'string'],
+            'items.*.type' => ['required', 'string', $this->ruleClosure()],
             'items.*.public' => ['required', 'boolean'],
-            'items.*.created_at' => ['required'],
+            'items.*.created_at' => [$this->ruleRequiredIf()],
         ];
     }
 
@@ -92,16 +85,33 @@ class Slow extends Command
         $count = count($data['items'] ?? $data);
         $rules = ['items' => ['array']];
 
+        $ruleClosure = $this->ruleClosure();
+        $ruleRequiredIf = $this->ruleRequiredIf();
+
         for ($i = 0; $i < $count; $i++) {
             $rules['items.'.$i.'.id'] = ['required', 'numeric'];
-            $rules['items.'.$i.'.type'] = ['required', 'string'];
+            $rules['items.'.$i.'.type'] = ['required', 'string', $ruleClosure];
             $rules['items.'.$i.'.public'] = ['required', 'boolean'];
-            $rules['items.'.$i.'.created_at'] = ['required'];
+            $rules['items.'.$i.'.created_at'] = [$ruleRequiredIf];
         }
 
         $this->finish('rulesFixed', $start);
 
         return $rules;
+    }
+
+    protected function ruleClosure(): Closure
+    {
+        return static function (string $attribute, mixed $value, Closure $fail) {
+            if ($value === 'foo') {
+                $fail("The {$attribute} is invalid.");
+            }
+        };
+    }
+
+    protected function ruleRequiredIf(): RequiredIf
+    {
+        return Rule::requiredIf(static fn () => boolval(rand(0, 1)));
     }
 
     protected function start(): float
